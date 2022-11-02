@@ -105,8 +105,10 @@ func setup(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	// a toolchain framework with which we can query the Promteous instance on the test cluster
 	metricsInstance := metrics.NewEmpty(term, framework.CommonController.KubeRest(), 5*time.Minute)
 
+	// A client to query Prometeous instance URL
 	prometheusClient := metrics.GetPrometheusClient(term, framework.CommonController.KubeRest(), token)
 
 	metricsInstance.AddQueries(
