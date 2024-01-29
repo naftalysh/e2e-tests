@@ -382,6 +382,8 @@ func setup(cmd *cobra.Command, args []string) {
 			klog.Fatalf("Error Loading Stage Users from the given Path Please check file/contents exists: %v", err)
 		}
 
+		klog.Infof("len(stageUsers)=%d; numberOfUsers=%d; threadCount=%d", len(stageUsers), numberOfUsers, threadCount)
+
 		selectedUsers, err = loadtestUtils.SelectUsers(stageUsers, numberOfUsers, threadCount, len(stageUsers))
 		if err != nil {
 			klog.Fatalf("Error Selecting the Users Based on thread count: %v", err)
@@ -1673,8 +1675,12 @@ func (h *ConcreteHandlerPipelines) handlePVCS(threadIndex int, framework *framew
 	}
 }
 
+// type ConcreteHandlerItsPipelines struct {
+// 	BaseHandler
+// }
+
 type ConcreteHandlerItsPipelines struct {
-	BaseHandler
+	ConcreteHandlerPipelines // Embedding ConcreteHandlerPipelines
 }
 
 func (h *ConcreteHandlerItsPipelines) Handle(ctx *JourneyContext) {
@@ -1743,6 +1749,11 @@ func (h *ConcreteHandlerItsPipelines) validateItsPipeline(ctx *JourneyContext, a
 			return false, nil
 		}
 		if IntegrationTestsPipelineRun.IsDone() {
+			// This PVC test could not work on Stage because our test users are not admins and becuase as developers they are not permissioned to query for PVs
+			if !stage {
+				h.handlePVCS(threadIndex, framework, IntegrationTestsPipelineRun)
+			}
+
 			succeededCondition := IntegrationTestsPipelineRun.Status.GetCondition(apis.ConditionSucceeded)
 			if succeededCondition.IsFalse() {
 				dur := IntegrationTestsPipelineRun.Status.CompletionTime.Sub(IntegrationTestsPipelineRun.CreationTimestamp.Time)

@@ -9,6 +9,9 @@ on:
       threads:
         type: string
         description: Number of threads
+      component_repo:
+        type: string
+        description: Component repository
 
 jobs:
   load_test:
@@ -39,6 +42,7 @@ jobs:
       env:
         USERS_PER_THREAD: ${{ github.event.inputs.users }}
         THREADS: ${{ github.event.inputs.threads }}
+        COMPONENT_REPO: ${{ github.event.inputs.component_repo }}
         PUSHGATEWAY_URL: ${{ secrets.PUSHGATEWAY_URL }}
         DISABLE_METRICS: ${{ secrets.DISABLE_METRICS }}
       run: ./run-stage.sh
